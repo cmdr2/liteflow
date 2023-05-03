@@ -54,12 +54,12 @@ Now, let's write an example implementation for each of the workflow modules. In 
 >
 > After that, there is no limitation on the number of arguments that can be sent to an event handler. Please ensure that the signature of the event handler functions matches the arguments being sent via `dispatch_event()` or `emit_event()`.
 >
-> For e.g. in the example below, `MyTask1` accepts only one argument in the event handler for `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if the `"event_foo"` event is being sent to `MyTask1`, exactly one argument needs to be sent (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
+> In the example below, `MyTask1` accepts only one argument in the event handler for `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if the `"event_foo"` event is being sent to `MyTask1`, exactly one argument needs to be sent (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
 
 #### Example implementation
 ```py
-import random
 from liteflow import Module
+import random
 
 class MyTask1(Module):
     def __init__(self):
