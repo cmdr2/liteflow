@@ -24,6 +24,10 @@ example_workflow = compile_workflow(example_workflow)
 example_workflow.dispatch_event("event_foo", "hello")
 ```
 
+A visual representation of this workflow is:
+
+![Untitled](https://user-images.githubusercontent.com/844287/235950815-4abb1556-1746-40d6-8cb5-69a8e81f95ed.jpg)
+
 Please see the [example below](#example-implement-the-workflow-modules) for a sample implementation of the modules in this example.
 
 ## Why another workflow library?
