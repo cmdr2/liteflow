@@ -1,9 +1,11 @@
+# liteflow
+
 A lightweight library for event and workflow-based programming in Python. Inspired by DOM events, and uses basic python datatypes for expressing the workflow concisely. Yet another workflow library.
 
-# Installation
+## Installation
 `pip install liteflow` (TBD)
 
-# Why another workflow library?
+## Why another workflow library?
 The library focuses on concise expression of workflows, using native Python datatypes. A workflow is represented by combining just three datatypes:
 * **list** - `[a, b, c]` - Modules `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, whose output is fed into `c`
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
@@ -11,8 +13,8 @@ The library focuses on concise expression of workflows, using native Python data
 
 Individual modules can be implemented by extending the `liteflow.Module` class, which adds DOM-like event-handling methods like `add_event_listener(event_type: str, listener: function)` and `dispatch_event(event_type: str, event: Event)`. It also adds two additional methods: `attach_output_listener(other_module: Module)` and `emit_event(event_type: str, event: Event)` to send/receive data to/from other modules in the workflow.
 
-# Example
-## Describe the workflow
+## Example
+### Describe the workflow
 ```py
 from liteflow import compile_workflow
 
@@ -36,7 +38,7 @@ This example runs `MyTask1` first. It then checks whether the emitted event is o
 If `MyTask1` emits event.type `"event_x"`, it feeds that event to `MyTaskX1` and then runs `MyTaskX2` one-after-another (i.e. sequentially).
 Otherwise if `MyTask1` emits event.type `"event_y"`, then it feeds that event to `MyTaskY1`. After that, it runs `MyTaskY2a` and `MyTaskY2b` in parallel. Both `MyTaskY2a` and `MyTaskY2b` receive the same input, i.e. the event emitted by `MyTaskY1`.
 
-## Implement the workflow modules
+### Implement the workflow modules
 Now, let's write an example implementation of the workflow modules. In this example, `MyTask1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
 
 ```py
