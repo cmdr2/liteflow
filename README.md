@@ -24,7 +24,7 @@ example_workflow = compile_workflow(example_workflow)
 example_workflow.dispatch_event("event_foo", "hello")
 ```
 
-Please see the [example below](#example-implement-the-workflow-modules) for an example implementation of the modules in this example.
+Please see the [example below](#example-implement-the-workflow-modules) for a sample implementation of the modules in this example.
 
 ## Why another workflow library?
 The library focuses on concise expression of workflows, using native Python datatypes. The API is designed to be lightweight and familiar, so that it's easy to remember and productive.
