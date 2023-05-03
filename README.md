@@ -116,12 +116,12 @@ class MyTaskY2b(Module):
 This module serves as the starting point of the workflow.
 
 ### liteflow.Module
-Extending from `liteflow.Module` adds three DOM-like event-handling methods:
+Extending from `liteflow.Module` adds 6 methods. Three DOM-like event-handling methods, and three workflow-related methods (to send/receive data between modules in the workflow).
+
 * `add_event_listener(event_name: str, listener: function)`
 * `dispatch_event(event_name: str, *args)`
-* `remove_event_listener(event_name: str, listener: function)`.
+* `remove_event_listener(event_name: str, listener: function)`
 
-`liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
 * `attach_output_listener(other_module: Module)`
 * `emit_event(event_name: str, *args)`
 * `detach_output_listener(other_module: Module)`
