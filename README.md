@@ -43,6 +43,7 @@ example_workflow.dispatch_event(e.type, e)
 This example runs `MyTask1` first. It then checks whether the emitted event is of type `"event_x"`, or `"event_y"`.
 
 If `MyTask1` emits event.type `"event_x"`, it feeds that event to `MyTaskX1` and then runs `MyTaskX2` one-after-another (i.e. sequentially).
+
 Otherwise if `MyTask1` emits event.type `"event_y"`, then it feeds that event to `MyTaskY1`. After that, it runs `MyTaskY2a` and `MyTaskY2b` in parallel. Both `MyTaskY2a` and `MyTaskY2b` receive the same input, i.e. the event emitted by `MyTaskY1`.
 
 ### Implement the workflow modules
