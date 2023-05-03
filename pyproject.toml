@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "liteflow"
+version = "1.0.0"
+authors = [
+  {name="cmdr2", email="secondary.cmdr2@gmail.com"},
+]
+description = "A lightweight library for event and workflow-based programming in Python. Inspired by DOM events, and uses basic python datatypes for expressing the workflow concisely. Yet another workflow library."
+readme = "README.md"
+requires-python = ">=3.8.5"
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"License :: OSI Approved :: MIT License",
+	"Operating System :: Microsoft :: Windows :: Windows 10",
+	"Operating System :: Microsoft :: Windows :: Windows 11",
+	"Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+]
+keywords = ["workflow", "events", "dom"]
+
+[project.urls]
+"Homepage" = "https://github.com/cmdr2/liteflow"
+"Bug Tracker" = "https://github.com/cmdr2/liteflow/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pytest > 7"
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
