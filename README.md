@@ -6,7 +6,9 @@ A lightweight library for event and workflow-based programming in Python. Inspir
 `pip install liteflow` (TBD)
 
 ## Why another workflow library?
-The library focuses on concise expression of workflows, using native Python datatypes. A workflow is represented by combining just three datatypes:
+The library focuses on concise expression of workflows, using native Python datatypes. The entire API can be kept in the head, and is described below.
+
+The workflow logic is represented by combining just three native datatypes:
 * **list** - `[a, b, c]` - Modules `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, whose output is fed into `c`
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
 * **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emit's event `"x"`, `b` is run if the parent emit's event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
