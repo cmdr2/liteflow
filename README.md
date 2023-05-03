@@ -11,12 +11,20 @@ The library focuses on concise expression of workflows, using native Python data
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
 * **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emit's event `"x"`, `b` is run if the parent emit's event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
 
-Individual modules can be implemented by extending the `liteflow.Module` class, which adds DOM-like event-handling methods like `add_event_listener(event_type: str, listener: function)` and `dispatch_event(event_type: str, event: Event)`. It also adds two additional methods: `attach_output_listener(other_module: Module)` and `emit_event(event_type: str, event: Event)` to send/receive data to/from other modules in the workflow.
+Workflow modules can be implemented by extending the `liteflow.Module` class. This adds three DOM-like event-handling methods:
+* `add_event_listener(event_type: str, listener: function)`
+* `dispatch_event(event_type: str, event: Event)`
+* `remove_event_listener(event_type: str, listener: function)`.
+
+`liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
+* `attach_output_listener(other_module: Module)`
+* `emit_event(event_type: str, event: Event)`
+* `detach_output_listener(other_module: Module)`
 
 ## Example
 ### Describe the workflow
 ```py
-from liteflow import compile_workflow
+from liteflow import compile_workflow, Event
 
 example_workflow = [
     MyTask1, {
