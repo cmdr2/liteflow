@@ -48,13 +48,15 @@ The workflow has been defined in the [example](#example) above.
 
 Now, let's write an example implementation for each of the workflow modules. In this example, `MyTask1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
 
-**A short note about event handlers:**
-The first argument sent to all the event handlers is the `event_name` (string). This is mandatory.
+#### **A short note about event handlers:**
 
-There is no limitation on the number of arguments that can be sent along with an event, but the signature of the listener functions should match the arguments being sent (to that Module) via `dispatch_event()` or `emit_event()`.
+> The first argument sent to all the event handlers is `event_name` (string). This is mandatory.
+>
+> After that, there is no limitation on the number of arguments that can be sent to an event handler. Please ensure that the signature of the event handler functions matches the arguments being sent (to that handler function) via `dispatch_event()` or `emit_event()`.
+>
+> For e.g. in the example below, `MyTask1` accepts only one argument in the event handler for `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if the `"event_foo"` event is being sent to `MyTask1`, exactly one argument needs to be sent (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
 
-For e.g in the example below, `MyTask1` accepts only one argument in the event handler of `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if `"event_foo"` is being sent to `MyTask1`, it needs to send exactly one argument (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
-
+#### Example implementation
 ```py
 import random
 from liteflow import Module
