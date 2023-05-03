@@ -10,8 +10,8 @@ class SequentialModule(Module):
         for i in range(len(modules) - 1):
             modules[i].attach_output_listener(modules[i + 1])
 
-    def dispatch_event(self, event_name, event):
-        self.modules[0].dispatch_event(event_name, event)
+    def dispatch_event(self, event_name, *args):
+        self.modules[0].dispatch_event(event_name, *args)
 
     def attach_output_listener(self, module):
         self.modules[-1].attach_output_listener(module)
@@ -24,9 +24,6 @@ class ParallelModule(Module):
 class ConditionalModule(Module):
     def __init__(self, map: dict[str, Module]):
         self.map = map
-        self.add_event_listener("*", self.on_event)
-
-    def on_event(self, event):
         for event_name, module in map.items():
             self.add_event_listener(event_name, lambda n, e: module.dispatch_event(n, e))
 

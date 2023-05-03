@@ -1,2 +1,2 @@
-from .types import Event, Module
+from .types import Module
 from .workflow import compile_workflow

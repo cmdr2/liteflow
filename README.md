@@ -7,7 +7,7 @@ A lightweight library for event and workflow-based programming in Python. Inspir
 
 ## Example
 ```py
-from liteflow import compile_workflow, Event
+from liteflow import compile_workflow
 
 example_workflow = [
     MyTask1(), { # run MyTask1, then conditionally branch based on "event_x" or "event_y"
@@ -21,8 +21,7 @@ example_workflow = [
 example_workflow = compile_workflow(example_workflow)
 
 # run the workflow
-e = Event("event_foo")
-example_workflow.dispatch_event(e.type, e)
+example_workflow.dispatch_event("event_foo", "hello")
 ```
 
 Please see the [example below](#example-implement-the-workflow-modules) for an example implementation of the modules in this example.
@@ -49,79 +48,78 @@ The workflow has been defined in the [example](#example) above.
 
 Now, let's write an example implementation for each of the workflow modules. In this example, `MyTask1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
 
+**A short note about event handlers:**
+The first argument sent to all the event handlers is the `event_name` (string). This is mandatory.
+
+There is no limitation on the number of arguments that can be sent along with an event, but the signature of the listener functions should match the arguments being sent (to that Module) via `dispatch_event()` or `emit_event()`.
+
+For e.g in the example below, `MyTask1` accepts only one argument in the event handler of `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if `"event_foo"` is being sent to `MyTask1`, it needs to send exactly one argument (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
+
 ```py
-from liteflow import Module, Event
+import random
+from liteflow import Module
 
 class MyTask1(Module):
     def __init__(self):
         self.add_event_listener("event_foo", self.on_foo)
 
-    def on_foo(self, event: Event):
-        print("MyTask1. Got", event.type)
-        import random
-        new_event_type = random.choice(("event_x", "event_y"))
-        e = Event(new_event_type)
-        self.emit_event(e.type, e)
+    def on_foo(self, event_name: str, data):
+        print("MyTask1. Got:", event_name, "data:", data)
+        new_event_name = random.choice(("event_x", "event_y"))
+        self.emit_event(new_event_name)
 
 class MyTaskX1(Module):
     def __init__(self):
         self.add_event_listener("event_x", self.on_event)
 
-    def on_event(self, event: Event):
-        print("MyTaskX1. Got", event.type)
-        e = Event("event_x1")
-        self.emit_event(e.type, e)
+    def on_event(self, event_name: str):
+        print("MyTaskX1. Got:", event_name)
+        self.emit_event("event_x1", 42, "question")
 
 class MyTaskX2(Module):
     def __init__(self):
-        self.add_event_listener("*", self.on_event)
+        self.add_event_listener("event_x1", self.on_event)
 
-    def on_event(self, event: Event):
-        print("MyTaskX2. Got", event.type)
+    def on_event(self, event_name: str, data, query):
+        print("MyTaskX2. Got:", event_name, "data:", data, query)
 
 class MyTaskY1(Module):
     def __init__(self):
         self.add_event_listener("event_y", self.on_event)
 
-    def on_event(self, event: Event):
-        print("MyTaskY1. Got", event.type)
-        e = Event("event_y1")
-        self.emit_event(e.type, e)
+    def on_event(self, event_name: str):
+        print("MyTaskY1. Got:", event_name)
+        self.emit_event("event_y1")
 
 class MyTaskY2a(Module):
     def __init__(self):
-        self.add_event_listener("*", self.on_event)
+        self.add_event_listener("event_y1", self.on_event)
 
-    def on_event(self, event: Event):
-        print("MyTaskY2a. Got", event.type)
+    def on_event(self, event_name: str):
+        print("MyTaskY2a. Got:", event_name)
 
 
 class MyTaskY2b(Module):
     def __init__(self):
         self.add_event_listener("*", self.on_event)
 
-    def on_event(self, event: Event):
-        print("MyTaskY2b. Got", event.type)
+    def on_event(self, event_name: str, *args):
+        print("MyTaskY2b. Got:", event_name, "data:", *args)
 ```
 
 ## API Reference
 ### compile_workflow
-`compile_workflow(workflow)`
+`compile_workflow(workflow)` returns a `liteflow.Module` instance, to which events can be sent.
+
+This module serves as the starting point of the workflow.
 
 ### liteflow.Module
 Extending from `liteflow.Module` adds three DOM-like event-handling methods:
-* `add_event_listener(event_type: str, listener: function)`
-* `dispatch_event(event_type: str, event: Event)`
-* `remove_event_listener(event_type: str, listener: function)`.
+* `add_event_listener(event_name: str, listener: function)`
+* `dispatch_event(event_name: str, *args)`
+* `remove_event_listener(event_name: str, listener: function)`.
 
 `liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
 * `attach_output_listener(other_module: Module)`
-* `emit_event(event_type: str, event: Event)`
+* `emit_event(event_name: str, *args)`
 * `detach_output_listener(other_module: Module)`
-
-### liteflow.Event
-```py
-class Event:
-    type: str
-    stop_propagation: bool = False
-```
