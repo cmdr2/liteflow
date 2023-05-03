@@ -13,7 +13,9 @@ The workflow logic is represented by combining just three native datatypes:
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
 * **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emit's event `"x"`, `b` is run if the parent emit's event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
 
-Workflow modules can be implemented by extending the `liteflow.Module` class. Please see the example and API reference below.
+Workflow modules can be implemented by extending the `liteflow.Module` class.
+
+Please see the [example](#example) and [API reference](#api-reference) below.
 
 ## Example
 ### Describe the workflow
