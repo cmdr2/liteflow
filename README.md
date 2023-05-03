@@ -6,22 +6,14 @@ A lightweight library for event and workflow-based programming in Python. Inspir
 `pip install liteflow` (TBD)
 
 ## Why another workflow library?
-The library focuses on concise expression of workflows, using native Python datatypes. The entire API can be kept in the head, and is described below.
+The library focuses on concise expression of workflows, using native Python datatypes. The API is designed to be lightweight and familiar, so it's easy to remember.
 
 The workflow logic is represented by combining just three native datatypes:
 * **list** - `[a, b, c]` - Modules `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, whose output is fed into `c`
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
 * **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emit's event `"x"`, `b` is run if the parent emit's event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
 
-Workflow modules can be implemented by extending the `liteflow.Module` class. This adds three DOM-like event-handling methods:
-* `add_event_listener(event_type: str, listener: function)`
-* `dispatch_event(event_type: str, event: Event)`
-* `remove_event_listener(event_type: str, listener: function)`.
-
-`liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
-* `attach_output_listener(other_module: Module)`
-* `emit_event(event_type: str, event: Event)`
-* `detach_output_listener(other_module: Module)`
+Workflow modules can be implemented by extending the `liteflow.Module` class. Please see the example and API reference below.
 
 ## Example
 ### Describe the workflow
@@ -104,4 +96,26 @@ class MyTaskY2b(Module):
 
     def on_event(self, event: Event):
         print("MyTaskY2b. Got", event.type)
+```
+
+## API Reference
+### compile_workflow
+`compile_workflow(workflow)`
+
+### liteflow.Module
+Extending from `liteflow.Module` adds three DOM-like event-handling methods:
+* `add_event_listener(event_type: str, listener: function)`
+* `dispatch_event(event_type: str, event: Event)`
+* `remove_event_listener(event_type: str, listener: function)`.
+
+`liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
+* `attach_output_listener(other_module: Module)`
+* `emit_event(event_type: str, event: Event)`
+* `detach_output_listener(other_module: Module)`
+
+### liteflow.Event
+```py
+class Event:
+    type: str
+    stop_propagation: bool = False
 ```
