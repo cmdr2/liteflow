@@ -25,7 +25,10 @@ from liteflow import compile_workflow, Event
 example_workflow = [
     MyTask1, {
        "event_x": [MyTaskX1, MyTaskX2],
-       "event_y": [MyTaskY1, {MyTaskY2a, MyTaskY2b}],
+       "event_y": [MyTaskY1, {
+            MyTaskY2a,
+            MyTaskY2b
+        }],
     },
 ]
 example_workflow = compile_workflow(example_workflow)
