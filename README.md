@@ -27,7 +27,7 @@ example_workflow.dispatch_event("event_foo", "hello")
 Please see the [example below](#example-implement-the-workflow-modules) for a sample implementation of the modules in this example.
 
 ## Why another workflow library?
-The library focuses on concise expression of workflows, using native Python datatypes. The API is designed to be lightweight and familiar, so that it's easy to remember and productive.
+The library focuses on concise expression of workflows, using native Python datatypes. The API is designed to be lightweight and familiar, so that it's easy to remember and be productive.
 
 The workflow logic is represented by combining just three native datatypes:
 * **list** - `[a, b, c]` - Modules `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, the output of `b` is fed into `c`
