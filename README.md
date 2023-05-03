@@ -32,7 +32,7 @@ The library focuses on concise expression of workflows, using native Python data
 The workflow logic is represented by combining just three native datatypes:
 * **list** - `[a, b, c]` - Modules `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, the output of `b` is fed into `c`
 * **set** - `{a, b, c}` - Modules `a`, `b`, `c` are run in parallel. All three receive the same event from their parent module. The set outputs are currently unused.
-* **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emit's event `"x"`, module `b` is run if the parent emit's event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
+* **dict** - `{"x": a, "y": b}` - Module `a` is run if the parent emits event `"x"`, module `b` is run if the parent emits event `"y"`. The key can also be a function (which takes the event as input, and returns `True` or `False`).
 
 Workflow modules can be implemented by extending the `liteflow.Module` class.
 
