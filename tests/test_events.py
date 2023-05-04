@@ -27,9 +27,17 @@ def test_1_1__register__can_register_event_listener_with_options():
     assert m.event_listeners["event_foo"][0] == (dummy_event_listener, {"foo": 42})
 
 
-def test_1_2__register__can_remove_registered_event_listener_by_function():
+def test_1_2a__register__can_remove_registered_event_listener_by_function():
     m = EventAware()
     m.add_event_listener("event_foo", dummy_event_listener)
+    m.remove_event_listener("event_foo", dummy_event_listener)
+
+    assert hasattr(m, "event_listeners")
+    assert "event_foo" not in m.event_listeners
+
+
+def test_1_2b__register__ignores_remove_listener_if_event_not_found():
+    m = EventAware()
     m.remove_event_listener("event_foo", dummy_event_listener)
 
     assert hasattr(m, "event_listeners")
@@ -48,7 +56,7 @@ def test_1_3__register__can_remove_registered_event_listener_by_function__specif
     assert m.event_listeners["event_foo"][0][0] == dummy_event_listener2
 
 
-def test_2_0__dispatch__can_invoke_registered_event_listener():
+def test_2_0a__dispatch__can_invoke_registered_event_listener():
     m = EventAware()
     m.add_event_listener("event_foo", dummy_event_listener)
 
@@ -56,6 +64,15 @@ def test_2_0__dispatch__can_invoke_registered_event_listener():
 
     assert EVENT_RECORDINGS == ["event_foo"]
     assert EVENT_DATA == [tuple()]
+
+
+def test_2_0b__dispatch__ignores_invoke_if_listener_not_found():
+    m = EventAware()
+
+    m.dispatch_event("event_foo")
+
+    assert EVENT_RECORDINGS == []
+    assert EVENT_DATA == []
 
 
 def test_2_1__dispatch__can_invoke_registered_event_listener_with_data():
@@ -109,6 +126,15 @@ def test_2_4__dispatch__can_specify_filtering_function_for_listeners():
     assert EVENT_DATA == []
 
 
+def test_2_5__dispatch__does_not_crash_if_filter_function_throws_an_error():
+    m = EventAware()
+    m.add_event_listener("event_foo", dummy_event_listener, {"filter_fn": lambda event_name, *args: 10 / 0})
+
+    m.dispatch_event("event_foo", 42)
+    assert EVENT_RECORDINGS == []
+    assert EVENT_DATA == []
+
+
 def test_3_0__emitter__can_attach_output_module():
     a = EventEmitter()
     b = EventAware()
@@ -118,7 +144,7 @@ def test_3_0__emitter__can_attach_output_module():
     assert b in a.output_listeners
 
 
-def test_3_1__emitter__can_detach_output_module():
+def test_3_1a__emitter__can_detach_output_module():
     a = EventEmitter()
     b = EventAware()
     a.attach_output_listener(b)
@@ -128,7 +154,16 @@ def test_3_1__emitter__can_detach_output_module():
     assert b not in a.output_listeners
 
 
-def test_3_1__emitter__can_emit_event_to_output_module():
+def test_3_1b__emitter__ignores_detach_if_output_module_is_not_attached():
+    a = EventEmitter()
+    b = EventAware()
+    a.detach_output_listener(b)
+
+    assert hasattr(a, "output_listeners")
+    assert b not in a.output_listeners
+
+
+def test_3_2a__emitter__can_emit_event_to_output_module():
     a = EventEmitter()
     b = EventAware()
     a.attach_output_listener(b)
@@ -141,7 +176,19 @@ def test_3_1__emitter__can_emit_event_to_output_module():
     assert EVENT_DATA == [(42,)]
 
 
-def test_3_2__emitter__can_emit_event_to_multiple_output_modules():
+def test_3_2b__emitter__ignores_emit_if_no_output_module_attached():
+    a = EventEmitter()
+    b = EventAware()
+
+    b.add_event_listener("event_foo", dummy_event_listener)
+
+    a.emit_event("event_foo", 42)
+
+    assert EVENT_RECORDINGS == []
+    assert EVENT_DATA == []
+
+
+def test_3_3__emitter__can_emit_event_to_multiple_output_modules():
     a = EventEmitter()
     b1 = EventAware()
     b2 = EventAware()
@@ -157,7 +204,7 @@ def test_3_2__emitter__can_emit_event_to_multiple_output_modules():
     assert EVENT_DATA == [(42,), (42,)]
 
 
-def test_3_2__emitter__can_emit_event_to_multiple_output_modules__different_events():
+def test_3_4__emitter__can_emit_event_to_multiple_output_modules__different_events():
     a = EventEmitter()
     b1 = EventAware()
     b2 = EventAware()

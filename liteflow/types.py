@@ -64,7 +64,9 @@ class EventEmitter:
     def detach_output_listener(self, listener: EventAware):
         if not hasattr(self, "output_listeners"):
             setattr(self, "output_listeners", [])
-        self.output_listeners.remove(listener)
+
+        if listener in self.output_listeners:
+            self.output_listeners.remove(listener)
 
     def emit_event(self, event_name: str, *args):
         if not hasattr(self, "output_listeners"):
