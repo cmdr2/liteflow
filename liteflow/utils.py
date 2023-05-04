@@ -6,7 +6,7 @@ def make_class_event_aware(clazz):
             raise Exception("Events can only be added/removed from the class, not on individual objects.")
         EventAware.add_event_listener(clazz, event_name, callback, options)
 
-    def remove_event_listener(event_name, callback, options={}):
+    def remove_event_listener(event_name, callback=None, options={}):
         if not isinstance(event_name, str):
             raise Exception("Events can only be added/removed from the class, not on individual objects.")
         EventAware.remove_event_listener(clazz, event_name, callback, options)
