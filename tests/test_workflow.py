@@ -1,6 +1,12 @@
 from liteflow import compile_workflow, Module
 from liteflow.workflow import SequentialModule, ParallelModule, ConditionalModule
 
+EVENT_RECORDINGS = []
+
+
+def teardown_function():
+    EVENT_RECORDINGS.clear()
+
 
 def test_1_0_basics__none():
     assert compile_workflow(None) is None
@@ -33,63 +39,174 @@ def test_1_5_basics__module_is_echoed_back():
 
 def test_2_0_list__sequential_module_is_returned():
     workflow = [Module()]
-    m = compile_workflow(workflow)
+    w = compile_workflow(workflow)
 
-    assert isinstance(m, SequentialModule)
-    assert not hasattr(m, "output_listeners")
-    assert not hasattr(workflow, "output_listeners")
+    assert isinstance(w, SequentialModule)
 
 
 def test_2_1_list__internal_modules_are_linked_sequentially():
     workflow = [Module(), Module(), Module()]
-    m = compile_workflow(workflow)
+    w = compile_workflow(workflow)
 
-    assert hasattr(workflow[0], "output_listeners")
-    assert hasattr(workflow[1], "output_listeners")
-    assert not hasattr(workflow[2], "output_listeners")
+    add_listener(workflow[0], expect="a", emit="b")
+    add_listener(workflow[1], expect="b", emit="c")
+    add_listener(workflow[2], expect="c")
 
-    assert workflow[1] in workflow[0].output_listeners
-    assert workflow[2] in workflow[1].output_listeners
-    assert len(workflow[0].output_listeners) == 1
-    assert len(workflow[1].output_listeners) == 1
+    w.dispatch_event("a")
 
-
-def test_2_2_list__call_to_sequential_invokes_first_module():
-    workflow = [Module(), Module(), Module()]
-    m = compile_workflow(workflow)
+    assert EVENT_RECORDINGS == ["a", "b", "c"]
 
 
-def test_2_3_list__nested_lists_are_linked_to_the_parent():
+def test_2_2_list__nested_list_receives_event_from_the_previous_module():
     workflow = [Module(), [Module(), Module()]]
-    compile_workflow(workflow)
+    w = compile_workflow(workflow)
 
-    assert workflow[1][0] in workflow[0].output_listeners
-    assert len(workflow[0].output_listeners) == 1
-    assert workflow[1][1] in workflow[1][0].output_listeners
-    assert len(workflow[1][0].output_listeners) == 1
+    add_listener(workflow[0], expect="a", emit="b")
+    add_listener(workflow[1][0], expect="b", emit="c")
+    add_listener(workflow[1][1], expect="c")
 
+    w.dispatch_event("a")
 
-def test_2_4_list__nested_lists_join_after_finishing_nesting__NOT_IMPLEMENTED():
-    # workflow = [Module(), [Module(), Module()], Module()]
-    # compile_workflow(workflow)
-
-    # assert workflow[1][0] in workflow[0].output_listeners
-    # assert len(workflow[0].output_listeners) == 1
-    # assert workflow[1][1] in workflow[1][0].output_listeners
-    # assert len(workflow[1][0].output_listeners) == 1
-
-    # assert workflow[2] in workflow[1][1].output_listeners
-    # assert not hasattr(workflow[2], "output_listeners")
-    pass
+    assert EVENT_RECORDINGS == ["a", "b", "c"]
 
 
-def test_3_1_set__first_module_is_returned():
+def test_2_3_list__nested_list_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+    workflow = [Module(), [Module(), Module()], Module()]
+    w = compile_workflow(workflow)
+
+    add_listener(workflow[0], expect="a", emit="b")
+    add_listener(workflow[1][0], expect="b", emit="c")
+    add_listener(workflow[1][1], expect="c", emit="d")
+    add_listener(workflow[2], expect="d")
+
+    w.dispatch_event("a")
+
+    assert EVENT_RECORDINGS == ["a", "b", "c", "d"]
+
+
+def test_3_0_list__sequential_module_is_returned():
+    workflow = {Module(), Module()}
+    w = compile_workflow(workflow)
+
+    assert isinstance(w, ParallelModule)
+
+
+def test_3_1_set__internal_modules_are_linked_in_parallel():
+    m1, m2, m3 = Module(), Module(), Module()
+    workflow = {m1, m2, m3}
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="a")
+    add_listener(m2, expect="a")
+    add_listener(m3, expect="a")
+
+    w.dispatch_event("a")
+
+    assert EVENT_RECORDINGS == ["a", "a", "a"]
+
+
+def test_3_2_set__nested_set_receives_event_from_the_previous_module():
+    m1, m2, m3 = Module(), Module(), Module()
+    workflow = [m1, {m2, m3}]
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="a", emit="b")
+    add_listener(m2, expect="b")
+    add_listener(m3, expect="b")
+
+    w.dispatch_event("a")
+
+    assert EVENT_RECORDINGS == ["a", "b", "b"]
+
+
+def test_3_3_set__nested_set_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+    m1, m2, m3, m4 = Module(), Module(), Module(), Module()
+    workflow = [m1, {m2, m3}, m4]
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="a", emit="b")
+    add_listener(m2, expect="b", emit="b1")
+    add_listener(m3, expect="b", emit="b2")
+    add_listener(m4, expect="b1")
+    add_listener(m4, expect="b2")
+
+    w.dispatch_event("a")
+
+    assert EVENT_RECORDINGS == ["a", "b", "b1", "b", "b2"]
+
+
+def test_4_0_dict__conditional_module_is_returned():
+    workflow = {"x": Module(), "y": Module()}
+    w = compile_workflow(workflow)
+
+    assert isinstance(w, ConditionalModule)
+
+
+def test_4_1_dict__internal_modules_are_linked_conditionally():
     m1, m2 = Module(), Module()
-    workflow = {m1, m2}
-    assert compile_workflow(workflow) == m1
+    workflow = {"x": m1, "y": m2}
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="x")
+    add_listener(m2, expect="y")
+
+    w.dispatch_event("x")
+    assert EVENT_RECORDINGS == ["x"]
+
+    EVENT_RECORDINGS.clear()
+
+    w.dispatch_event("y")
+    assert EVENT_RECORDINGS == ["y"]
 
 
-def test_3_2_set__modules_are_linked_in_parallel_to_the_set_parent():
-    m1, m2 = Module(), Module()
-    parent = Module()
-    workflow = {m1, m2}
+def test_4_2_dict__nested_dict_receives_event_from_the_previous_module_conditionally():
+    m1, m2, m3 = Module(), Module(), Module()
+    workflow = [m1, {"x": m2, "y": m3}]
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="a", emit="x")
+    add_listener(m1, expect="b", emit="y")
+    add_listener(m2, expect="x")
+    add_listener(m3, expect="y")
+
+    w.dispatch_event("a")
+    assert EVENT_RECORDINGS == ["a", "x"]
+
+    EVENT_RECORDINGS.clear()
+
+    w.dispatch_event("b")
+    assert EVENT_RECORDINGS == ["b", "y"]
+
+
+def test_4_3_dict__nested_dict_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+    m1, m2, m3, m4 = Module(), Module(), Module(), Module()
+    workflow = [m1, {"x": m2, "y": m3}, m4]
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="a", emit="x")
+    add_listener(m1, expect="b", emit="y")
+    add_listener(m2, expect="x", emit="x1")
+    add_listener(m3, expect="y", emit="y1")
+    add_listener(m4, expect="x1")
+    add_listener(m4, expect="y1")
+
+    w.dispatch_event("a")
+    assert EVENT_RECORDINGS == ["a", "x", "x1"]
+
+    EVENT_RECORDINGS.clear()
+
+    w.dispatch_event("b")
+    assert EVENT_RECORDINGS == ["b", "y", "y1"]
+
+
+def add_listener(m: Module, expect: str = None, emit: str = None):
+    m.add_event_listener(expect, make_event(expect=expect, emit=emit))
+
+
+def make_event(expect: str = None, emit: str = None):
+    def on_event(self, event_name: str):
+        EVENT_RECORDINGS.append(event_name)
+        if event_name == expect:
+            self.emit_event(emit)
+
+    return on_event
