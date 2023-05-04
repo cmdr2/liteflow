@@ -12,7 +12,7 @@ class EventAware:
         event_listeners[event_name] = event_listeners.get(event_name, [])
         event_listeners[event_name].append((callback, options))
 
-    def remove_event_listener(self, event_name: str, callback, options={}):
+    def remove_event_listener(self, event_name: str, callback=None, options={}):
         if not hasattr(self, "event_listeners"):
             setattr(self, "event_listeners", {})
 
@@ -22,15 +22,17 @@ class EventAware:
 
         listeners = event_listeners[event_name]
 
-        idx = -1
-        for i, (l, opts) in enumerate(listeners):
-            if l == callback:
-                idx = i
-                break
+        if callback:
+            idx = -1
+            for i, (l, opts) in enumerate(listeners):
+                if l == callback:
+                    idx = i
+                    break
 
-        if idx != -1:
-            del listeners[idx]
-        if len(listeners) == 0:
+            if idx != -1:
+                del listeners[idx]
+
+        if len(listeners) == 0 or callback is None:
             del event_listeners[event_name]
 
     def dispatch_event(self, event_name: str, *args):
