@@ -56,12 +56,12 @@ class EventAware:
 
 
 class EventEmitter:
-    def attach_output_listener(self, listener):
+    def attach_output_listener(self, listener: EventAware):
         if not hasattr(self, "output_listeners"):
             setattr(self, "output_listeners", [])
         self.output_listeners.append(listener)
 
-    def detach_output_listener(self, listener):
+    def detach_output_listener(self, listener: EventAware):
         if not hasattr(self, "output_listeners"):
             setattr(self, "output_listeners", [])
         self.output_listeners.remove(listener)
@@ -69,7 +69,7 @@ class EventEmitter:
     def emit_event(self, event_name: str, *args):
         if not hasattr(self, "output_listeners"):
             return
-        output_listeners = list(filter(lambda x: getattr(x, "enabled", True), self.output_listeners))
+        output_listeners: list[EventAware] = list(filter(lambda x: getattr(x, "enabled", True), self.output_listeners))
         for output_listener in output_listeners:
             output_listener.dispatch_event(event_name, *args)
 

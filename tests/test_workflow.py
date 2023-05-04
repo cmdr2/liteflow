@@ -70,7 +70,7 @@ def test_2_2_list__nested_list_receives_event_from_the_previous_module():
     assert EVENT_RECORDINGS == ["a", "b", "c"]
 
 
-def test_2_3_list__nested_list_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+def test_2_3_list__nested_list_joins_after_finishing_nesting():
     workflow = [Module(), [Module(), Module()], Module()]
     w = compile_workflow(workflow)
 
@@ -119,7 +119,7 @@ def test_3_2_set__nested_set_receives_event_from_the_previous_module():
     assert EVENT_RECORDINGS == ["a", "b", "b"]
 
 
-def test_3_3_set__nested_set_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+def test_3_3_set__nested_set_joins_after_finishing_nesting():
     m1, m2, m3, m4 = Module(), Module(), Module(), Module()
     workflow = [m1, {m2, m3}, m4]
     w = compile_workflow(workflow)
@@ -132,7 +132,8 @@ def test_3_3_set__nested_set_joins_after_finishing_nesting__NOT_IMPLEMENTED():
 
     w.dispatch_event("a")
 
-    assert EVENT_RECORDINGS == ["a", "b", "b1", "b", "b2"]
+    # the set can be executed in any order
+    assert EVENT_RECORDINGS == ["a", "b", "b", "b1", "b2"] or EVENT_RECORDINGS == ["a", "b", "b", "b2", "b1"]
 
 
 def test_4_0_dict__conditional_module_is_returned():
@@ -178,7 +179,7 @@ def test_4_2_dict__nested_dict_receives_event_from_the_previous_module_condition
     assert EVENT_RECORDINGS == ["b", "y"]
 
 
-def test_4_3_dict__nested_dict_joins_after_finishing_nesting__NOT_IMPLEMENTED():
+def test_4_3_dict__nested_dict_joins_after_finishing_nesting():
     m1, m2, m3, m4 = Module(), Module(), Module(), Module()
     workflow = [m1, {"x": m2, "y": m3}, m4]
     w = compile_workflow(workflow)
@@ -199,14 +200,33 @@ def test_4_3_dict__nested_dict_joins_after_finishing_nesting__NOT_IMPLEMENTED():
     assert EVENT_RECORDINGS == ["b", "y", "y1"]
 
 
+def test_4_4_dict__keys_can_be_functions():
+    is_upper = lambda event_name, *args: event_name.isupper()
+
+    m1, m2 = Module(), Module()
+    workflow = {"x": m1, is_upper: m2}
+    w = compile_workflow(workflow)
+
+    add_listener(m1, expect="x")
+    add_listener(m2, expect="X")
+
+    w.dispatch_event("x")
+    assert EVENT_RECORDINGS == ["x"]
+
+    EVENT_RECORDINGS.clear()
+
+    w.dispatch_event("X")
+    assert EVENT_RECORDINGS == ["X"]
+
+
 def add_listener(m: Module, expect: str = None, emit: str = None):
-    m.add_event_listener(expect, make_event(expect=expect, emit=emit))
+    m.add_event_listener(expect, make_event(m, expect=expect, emit=emit))
 
 
-def make_event(expect: str = None, emit: str = None):
-    def on_event(self, event_name: str):
+def make_event(module: Module, expect: str = None, emit: str = None):
+    def on_event(event_name: str):
         EVENT_RECORDINGS.append(event_name)
-        if event_name == expect:
-            self.emit_event(emit)
+        if event_name == expect and emit:
+            module.emit_event(emit)
 
     return on_event
