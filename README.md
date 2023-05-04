@@ -24,6 +24,10 @@ example_workflow = compile_workflow(example_workflow)
 example_workflow.dispatch_event("event_foo", "hello")
 ```
 
+A visual representation of this workflow is:
+
+![Untitled](https://user-images.githubusercontent.com/844287/235950815-4abb1556-1746-40d6-8cb5-69a8e81f95ed.jpg)
+
 Please see the [example below](#example-implement-the-workflow-modules) for a sample implementation of the modules in this example.
 
 ## Why another workflow library?
@@ -48,16 +52,18 @@ The workflow has been defined in the [example](#example) above.
 
 Now, let's write an example implementation for each of the workflow modules. In this example, `MyTask1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
 
-**A short note about event handlers:**
-The first argument sent to all the event handlers is the `event_name` (string). This is mandatory.
+#### **A short note about event handlers:**
 
-There is no limitation on the number of arguments that can be sent along with an event, but the signature of the listener functions should match the arguments being sent (to that Module) via `dispatch_event()` or `emit_event()`.
+> The first argument sent to all the event handlers is `event_name` (string). This is mandatory.
+>
+> After that, there is no limitation on the number of arguments that can be sent to an event handler. Please ensure that the signature of the event handler functions matches the arguments being sent via `dispatch_event()` or `emit_event()`.
+>
+> In the example below, `MyTask1` accepts only one argument in the event handler for `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if the `"event_foo"` event is being sent to `MyTask1`, exactly one argument needs to be sent (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
 
-For e.g in the example below, `MyTask1` accepts only one argument in the event handler of `"event_foo"` (other than `event_name`), while `MyTaskX1` does not accept any arguments in the event handler for `"event_x"`. So if `"event_foo"` is being sent to `MyTask1`, it needs to send exactly one argument (other than `event_name`), and if `"event_x"` is being sent to `MyTaskX1`, no arguments should be sent (other than `event_name`).
-
+#### Example implementation
 ```py
-import random
 from liteflow import Module
+import random
 
 class MyTask1(Module):
     def __init__(self):
@@ -114,12 +120,12 @@ class MyTaskY2b(Module):
 This module serves as the starting point of the workflow.
 
 ### liteflow.Module
-Extending from `liteflow.Module` adds three DOM-like event-handling methods:
+Extending from `liteflow.Module` adds 6 methods. Three DOM-like event-handling methods, and three workflow-related methods (to send/receive data between modules in the workflow).
+
 * `add_event_listener(event_name: str, listener: function)`
 * `dispatch_event(event_name: str, *args)`
-* `remove_event_listener(event_name: str, listener: function)`.
+* `remove_event_listener(event_name: str, listener: function)`
 
-`liteflow.Module` also adds three workflow-related methods, to send/receive data between modules in the workflow:
 * `attach_output_listener(other_module: Module)`
 * `emit_event(event_name: str, *args)`
 * `detach_output_listener(other_module: Module)`
