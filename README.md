@@ -53,7 +53,7 @@ Please see the [example](#example) and [API reference](#api-reference) below.
 2. Each task can be unit-tested, and can focus on doing just one thing.
 3. Non-technical users can write/modify the workflow logic, using visual programming. Maybe someone will write a visual programming plugin for liteflow, that produces liteflow-compatible workflow code?
 
-You can also express complex neural network architectures this way, since PyTorch's `nn.Module` objects can be used directly as tasks.
+You can also express neural network architectures with liteflow, since PyTorch's `nn.Module` objects can be used directly as tasks.
 
 ## Example: Implement the workflow tasks
 The workflow has been defined in the [example](#example) above.
