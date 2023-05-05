@@ -283,6 +283,22 @@ def test_5_3_callable__tasks_will_be_invoked_even_if_the_previous_task_returned_
     assert EVENT_RECORDINGS == ["x", None, None]
 
 
+def test_5_4_callable__task_functions_can_return_multiple_values():
+    def task_a(a):
+        EVENT_RECORDINGS.append(a)
+        return "y", 42
+
+    def task_b(a, b):
+        EVENT_RECORDINGS.append([a, b])
+
+    workflow = [task_a, task_b]
+    w = compile_workflow(workflow)
+
+    w.dispatch_event("x")
+
+    assert ["x", ["y", 42]]
+
+
 def make_dummy_task_fn(emit: str = None):
     def on_event(event_name: str, *args):
         EVENT_RECORDINGS.append(event_name)
