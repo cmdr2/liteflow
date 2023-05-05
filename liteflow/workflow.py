@@ -1,6 +1,7 @@
 from .types import Module
 
 from typing import Union, Callable
+from inspect import isclass
 
 
 class SequentialModule(Module):
@@ -18,7 +19,7 @@ class SequentialModule(Module):
 
 
 class BufferedOutputModule(Module):
-    def __init__(self, modules: list[Module]) -> None:
+    def __init__(self, modules: list[Module]):
         self.output_buffer = []
 
         output_buffer_module = Module()
@@ -52,7 +53,7 @@ class ParallelModule(BufferedOutputModule):
 
 
 class ConditionalModule(BufferedOutputModule):
-    def __init__(self, modules_map: dict[str | Callable, Module]):
+    def __init__(self, modules_map: dict[str | Callable, Module | Callable]):
         self.modules_map = {k: compile_workflow(m) for k, m in modules_map.items()}
 
         super().__init__(self.modules_map.values())
@@ -65,9 +66,24 @@ class ConditionalModule(BufferedOutputModule):
         self.emit_buffered_events()
 
 
-def compile_workflow(workflow: Union[list, set, dict, Module]) -> Module:
+class CallableWrapperModule(Module):
+    def __init__(self, callable: Callable):
+        self.callable = callable
+
+    def dispatch_event(self, event_name: str, *args):
+        res = self.callable(event_name, *args)
+        if isinstance(res, tuple):
+            self.emit_event(*res)
+        else:
+            self.emit_event(res)
+
+
+def compile_workflow(workflow: Union[list, set, dict, Module, Callable]) -> Module:
     if isinstance(workflow, Module):
         return workflow
+
+    if callable(workflow) and not isclass(workflow):
+        return CallableWrapperModule(workflow)
 
     if isinstance(workflow, list) and len(workflow) > 0:
         return SequentialModule(workflow)

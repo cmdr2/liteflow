@@ -1,5 +1,6 @@
+from typing import Any
 from liteflow import compile_workflow, Module
-from liteflow.workflow import SequentialModule, ParallelModule, ConditionalModule
+from liteflow.workflow import SequentialModule, ParallelModule, ConditionalModule, CallableWrapperModule
 
 EVENT_RECORDINGS = []
 
@@ -13,11 +14,16 @@ def test_1_0_basics__none():
 
 
 def test_1_1_basics__illegal_type():
+    class Foo:
+        pass
+
     assert compile_workflow("foo") is None
     assert compile_workflow(42) is None
     assert compile_workflow(42.0) is None
     assert compile_workflow(True) is None
     assert compile_workflow(tuple()) is None
+    assert compile_workflow(Foo()) is None
+    assert compile_workflow(Foo) is None
 
 
 def test_1_2_basics__empty_list():
@@ -217,6 +223,81 @@ def test_4_4_dict__keys_can_be_functions():
 
     w.dispatch_event("X")
     assert EVENT_RECORDINGS == ["X"]
+
+
+def test_5_0_callable__callable_wrapper_module_is_returned():
+    class M2:
+        def __call__(self, *args: Any, **kwds: Any) -> Any:
+            pass
+
+    m1 = lambda: True
+    m2 = M2()
+
+    assert isinstance(compile_workflow(m1), CallableWrapperModule)
+    assert isinstance(compile_workflow(m2), CallableWrapperModule)
+
+
+def run_callable_test(task_create_fn):
+    m1 = task_create_fn(emit="x1")
+    m2a = task_create_fn(emit="x2a")
+    m2b = task_create_fn(emit="x2b")
+    m3 = task_create_fn()
+    m4 = task_create_fn(emit="y1")
+    m5 = task_create_fn()
+
+    workflow = {
+        "x": [m1, {m2a, m2b}, m3],
+        "y": [m4, m5],
+    }
+    w = compile_workflow(workflow)
+
+    w.dispatch_event("x")
+    # the set can be executed in any order
+    assert EVENT_RECORDINGS == ["x", "x1", "x1", "x2a", "x2b"] or EVENT_RECORDINGS == ["x", "x1", "x1", "x2b", "x2a"]
+
+    EVENT_RECORDINGS.clear()
+
+    w.dispatch_event("y")
+    # the set can be executed in any order
+    assert EVENT_RECORDINGS == ["y", "y1"]
+
+
+def test_5_1_callable__workflow_tasks_can_be_functions():
+    run_callable_test(task_create_fn=make_dummy_task_fn)
+
+
+def test_5_2_callable__workflow_tasks_can_be_callable_objects():
+    run_callable_test(task_create_fn=make_dummy_task_callable_object)
+
+
+def test_5_3_callable__tasks_will_be_invoked_even_if_the_previous_task_returned_None():
+    m1 = make_dummy_task_fn()
+    m2 = make_dummy_task_callable_object()
+    m3 = make_dummy_task_fn()
+
+    workflow = [m1, m2, m3]
+    w = compile_workflow(workflow)
+
+    w.dispatch_event("x")
+
+    assert EVENT_RECORDINGS == ["x", None, None]
+
+
+def make_dummy_task_fn(emit: str = None):
+    def on_event(event_name: str, *args):
+        EVENT_RECORDINGS.append(event_name)
+        return emit
+
+    return on_event
+
+
+def make_dummy_task_callable_object(emit: str = None):
+    class Foo:
+        def __call__(self, event_name: str, *args: Any, **kwds: Any):
+            EVENT_RECORDINGS.append(event_name)
+            return emit
+
+    return Foo()
 
 
 def add_listener(m: Module, expect: str = None, emit: str = None):
