@@ -14,11 +14,11 @@ A task function will be sent the output of the previous task. A task function ha
 from liteflow import compile_workflow
 
 example_workflow = [
-    my_task_1, { # run `my_task_1()`, then branch conditionally based on the return value of my_task_1
-       "event_x": [my_task_x1, my_task_x2], # run `my_task_x1()` and `my_task_x2()` one-after-another (i.e sequentially)
-       "event_y": [my_task_y1, { # or, run `my_task_y1()`, then run `my_task_y2a()` and `my_task_y2b()` in parallel
-            my_task_y2a,
-            my_task_y2b
+    task_1, { # run `task_1()`, then branch conditionally based on the return value of task_1
+       "event_x": [task_x1, task_x2], # run `task_x1()` and `task_x2()` one-after-another (i.e sequentially)
+       "event_y": [task_y1, { # or, run `task_y1()`, then run `task_y2a()` and `task_y2b()` in parallel
+            task_y2a,
+            task_y2b
         }],
     },
 ]
@@ -56,7 +56,7 @@ Please see the [example](#example) and [API reference](#api-reference) below.
 ## Example: Implement the workflow tasks
 The workflow has been defined in the [example](#example) above.
 
-Now, let's write an example implementation for each of the workflow tasks. In this example, `my_task_1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
+Now, let's write an example implementation for each of the workflow tasks. In this example, `task_1` emits `"event_x"` or `"event_y"` at random. This will result in one of the two branches getting executed each time the workflow is run.
 
 #### **A short note about task functions:**
 
@@ -64,7 +64,7 @@ Now, let's write an example implementation for each of the workflow tasks. In th
 >
 > There is no upper limit on the number of arguments that can be sent to a task function. Please ensure that the number of arguments in a task function matches the number of values sent by the previous task.
 >
-> In the example below, `my_task_1` accepts only one extra argument (other than the mandatory first argument), while `my_task_x1` does not accept any extra arguments. So if the `"event_foo"` event is being sent to `my_task_1`, exactly one extra argument needs to be sent, and if `"event_x"` is being sent to `my_task_x1`, no extra arguments should be sent.
+> In the example below, `task_1` accepts only one extra argument (other than the mandatory first argument), while `task_x1` does not accept any extra arguments. So if the `"event_foo"` event is being sent to `task_1`, exactly one extra argument needs to be sent, and if `"event_x"` is being sent to `task_x1`, no extra arguments should be sent.
 >
 > If a task function does not return anything, the next function will receive `None` as the first argument.
 
@@ -72,25 +72,25 @@ Now, let's write an example implementation for each of the workflow tasks. In th
 ```py
 import random
 
-def my_task_1(a, b):
+def task_1(a, b):
     print("task 1. Got:", a, b)
     return random.choice(("event_x", "event_y"))
 
-def my_task_x1(a):
+def task_x1(a):
     print("task x1. Got:", a)
     return "event_x1", 42, "question"
 
-def my_task_x2(a, b, c):
+def task_x2(a, b, c):
     print("task x2. Got:", a, b, c) # prints `task x2. Got: "event_x1" 42 "question"`
 
-def my_task_y1(a):
+def task_y1(a):
     print("task y1. Got:", a)
     return "event_y1"
 
-def my_task_y2a(a):
+def task_y2a(a):
     print("task y2a. Got:", a)
 
-def my_task_y2b(a, *args):
+def task_y2b(a, *args):
     print("task y2b. Got:", a, args)
 ```
 
