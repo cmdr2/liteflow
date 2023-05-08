@@ -6,9 +6,6 @@ Workflow tasks can be implemented as regular python functions, or class objects 
 
 A task function will be sent the output of the previous task. A task function has to accept atleast one argument. This is the only requirement.
 
-## Installation
-`pip install liteflow` (TBD)
-
 ## Example
 ```py
 from liteflow import compile_workflow
