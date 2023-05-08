@@ -1,5 +1,7 @@
 # liteflow
 
+**This library is no longer in active development!**
+
 A lightweight library for event and workflow-based programming in Python. Uses native python datatypes for expressing the workflow concisely. Modules inspired by DOM Events. Yet another workflow library.
 
 Workflow tasks can be implemented as regular python functions, or class objects that implement the `__call__()` method, or as sub-classes of the `liteflow.Module` class.
