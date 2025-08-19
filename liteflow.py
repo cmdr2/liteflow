@@ -1,5 +1,5 @@
 def run(workflow, data=None):
-    if isinstance(workflow, list):  # sequential tasks
+    if isinstance(workflow, (list, tuple)):  # sequential tasks
         for item in workflow:
             data = run(item, data)
 
