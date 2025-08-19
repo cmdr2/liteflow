@@ -34,7 +34,7 @@ Please see the [example below](#example-implement-the-workflow-tasks) for a samp
 The library focuses on concise expression of workflows, using native Python datatypes. The API is designed to be lightweight and familiar, so that it's easier to remember and be productive.
 
 The workflow logic is represented by combining just three native datatypes:
-* **list** - `[a, b, c]` - Tasks `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, and the output of `b` is fed into `c`.
+* **list**/**tuple** - `[a, b, c]` or `(a, b, c)` - Tasks `a`, `b`, `c` are run sequentially i.e. one-after-another. The output of `a` is fed into `b`, and the output of `b` is fed into `c`.
 * **set** - `{a, b, c}` - Tasks `a`, `b`, `c` are run in parallel. All three receive the same input (i.e. the data returned from the previous task).
 * **dict** - `{"x": a, "y": b}` - Task `a` is run if the parent returns `"x"`, task `b` is run if the parent returns `"y"`. The dictionary key can also be a function (which receives the previous task's output, and needs to return `True` or `False`).
 
