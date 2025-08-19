@@ -12,8 +12,8 @@ from liteflow import run
 
 example_workflow = [
     task_1, { # run `task_1()`, then branch conditionally based on the return value of task_1
-       "x": [task_x1, task_x2], # run `task_x1()` and `task_x2()` one-after-another (i.e sequentially)
-       "y": [task_y1, { # or, run `task_y1()`, then run `task_y2a()` and `task_y2b()` in parallel
+       "event_x": [task_x1, task_x2], # run `task_x1()` and `task_x2()` one-after-another (i.e sequentially)
+       "event_y": [task_y1, { # or, run `task_y1()`, then run `task_y2a()` and `task_y2b()` in parallel
             task_y2a,
             task_y2b
         }],
